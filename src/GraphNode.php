@@ -10,6 +10,13 @@ class GraphNode
     const PARAM_FIELDS = 'fields';
 
     /**
+     * The name of the ids param
+     *
+     * @const string
+     */
+    const PARAM_IDS = 'ids';
+
+    /**
      * The name of the limit param
      *
      * @const string
@@ -45,6 +52,13 @@ class GraphNode
     protected $modifiers = [];
 
     /**
+     * The ids that we want to request.
+     *
+     * @var array
+     */
+    protected $ids = [];
+
+    /**
      * The fields & GraphEdge's that we want to request.
      *
      * @var array
@@ -65,9 +79,10 @@ class GraphNode
      * @param array  $fields
      * @param int    $limit
      */
-    public function __construct($name, $fields = [], $limit = 0)
+    public function __construct($name, $ids = [], $fields = [], $limit = 0)
     {
         $this->name = $name;
+        $this->ids($ids);
         $this->fields($fields);
         if ($limit) {
             $this->limit($limit);
@@ -135,6 +150,24 @@ class GraphNode
     }
 
     /**
+     * Set the ids for this node.
+     *
+     * @param mixed $ids
+     *
+     * @return GraphNode
+     */
+    public function ids($ids)
+    {
+        if (!is_array($ids)) {
+            $ids = func_get_args();
+        }
+
+        $this->ids = array_merge($this->ids, $ids);
+
+        return $this;
+    }
+
+    /**
      * Set the fields for this node.
      *
      * @param mixed $fields
@@ -150,6 +183,16 @@ class GraphNode
         $this->fields = array_merge($this->fields, $fields);
 
         return $this;
+    }
+
+    /**
+     * Gets the ids for this node.
+     *
+     * @return array
+     */
+    public function getIds()
+    {
+        return $this->ids;
     }
 
     /**
@@ -180,6 +223,18 @@ class GraphNode
         }
 
         $this->compiledValues[] = http_build_query($this->modifiers, '', '&');
+    }
+
+    /**
+     * Compile the id values.
+     */
+    public function compileIds()
+    {
+        if (count($this->ids) === 0) {
+            return;
+        }
+
+        $this->compiledValues[] = static::PARAM_IDS.'='.implode(',', $this->ids);
     }
 
     /**
@@ -225,6 +280,7 @@ class GraphNode
         }
 
         $this->compileModifiers();
+        $this->compileIds();
         $this->compileFields();
 
         return $this->compileUrl();

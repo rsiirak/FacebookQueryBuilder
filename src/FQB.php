@@ -108,6 +108,24 @@ class FQB
     /**
      * Alias to method on GraphNode.
      *
+     * @param array|string $ids
+     *
+     * @return FQB
+     */
+    public function ids($ids)
+    {
+        if (!is_array($ids)) {
+            $ids = func_get_args();
+        }
+
+        $this->graphNode->ids($ids);
+
+        return $this;
+    }
+
+    /**
+     * Alias to method on GraphNode.
+     *
      * @param array|string $fields
      *
      * @return FQB
